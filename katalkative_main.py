@@ -26,7 +26,7 @@ blankLinePasser(logFile, 2)
 chatMemberList = []
 
 for logFilePresentLine in logFile:
-	lineType = lineTypeChecker(logFilePresentLine)
+	lineType = lineTypeChecker(logFilePresentLine, chatMemberList)
 	'''
 	if(lineType == 'invite'):
 		inviteLineChecker(logFilePresentLine, chatMemberList)

@@ -5,8 +5,17 @@ class chatMember:
 	def __init__(self, name, invitedDate):
 		self.name = name
 		self.invitedDate = invitedDate
+		self.chattingSize = 0
+		self.chatCount = 0
+	
 	def printName(self):
 		print self.name
+	
+	def chattingSizeAdder(self, chattingLength):
+		self.chattingSize += chattingLength
+	
+	def chatCounter(self):
+		self.chatCount += 1
 
 def chatFileOpener(fileName):
 	file = open(fileName, 'r')
@@ -50,15 +59,16 @@ def blankLinePasser(passFile,lineNum):
 	for passNum in range(lineNum):
 		next(passFile)
 
-def lineTypeChecker(chatSingleLine):
-	extraLineCheck = extraLineChecker(chatSingleLine)
+def lineTypeChecker(chatSingleLine, memberList):
 	
-	if(extraLineCheck):
+	if(extraLineChecker(chatSingleLine)):
 		if(chatSingleLine.find(' : ') > 0):
 			lineType = 'chat'
 
 		elif(chatSingleLine.find('초대했습니다.') > 0):
 			lineType = 'invite'
+			inviteLineChecker(chatSingleLine, memberList)
+		
 		else:
 			lineType = 'date'
 
@@ -101,14 +111,34 @@ def inviteLineChecker(inviteLine, memberList):
 			inviteMemberData[dataIndex] = inviteMemberData[dataIndex][spacePos+1:]
 		
 		if not(dataIndex == 0 and memberList):
-			nameOverlap = findOverlapMember(memberList, inviteMemberData[dataIndex])
-			if not nameOverlap:
+			if not chatterSearcher(memberList, inviteMemberData[dataIndex]):
 				chatterInfo = chatMember(inviteMemberData[dataIndex], inviteDate)
 				memberList.append(chatterInfo)
 
-def findOverlapMember(memberList, inviteMember):
-	overlapped = 0
-	for findIndex in range(len(memberList)):
-		if  memberList[findIndex].name == inviteMember:
-			overlapped = 1 
-	return overlapped
+def chatterSearcher(memberList, searchMemberName):
+	targetInstance = False
+
+	for searchInstance in memberList:
+		if searchInstance.name == searchMemberName:
+			targetInstance = searchInstance
+			break
+
+	return targetInstance
+
+def chatLineChecker(chatLine, memberList):
+	decodeType = 'utf8'
+
+	dateDividerPos = chatLine.find(', ')
+	
+	chatLine = chatLine[dateDividerPos+2:]
+
+	chattingDividerPos = chatLine.find(' : ')
+	
+	chatter = chatLine[:chattingDividerPos]
+	chatting = chatLine[chattingDividerPos+3:]
+
+	chatterInstance = chatterSearcher(memberList, chatter)
+	chattingLength = len(chatting.decode(decodeType)) - 1
+
+	chatterInstance.chattingSizeAdder(chattingLength)
+	chatterInstance.chatCounter()
