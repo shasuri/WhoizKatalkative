@@ -19,21 +19,22 @@ blankLinePasser(logFile, 2)
 #i = 5
 
 chatMemberList = []
-
+previousChatter = 'Blank'
 for logFilePresentLine in logFile:
-	'''
+		previousChatter = lineTypeChecker(logFilePresentLine, chatMemberList, previousChatter)
+'''
 	try:
 		lineType = lineTypeChecker(logFilePresentLine, chatMemberList)
 
 	except:
 		print 'errored line',
 		print logFilePresentLine.decode(decodeType)
-	
+'''
+'''
 	print i, 
 	print logFilePresentLine.decode(decodeType)
 	i += 1
-	'''
-	lineTypeChecker(logFilePresentLine, chatMemberList)
+'''
 print "Chatting Title : " + chatTitle
 print "Chatting Member Number : %d" % chatMemberNum
 print "Log is saved at " + str(logSavedDate)

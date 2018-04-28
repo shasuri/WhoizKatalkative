@@ -67,7 +67,6 @@ def printMemberInfo(memberList):
 		print "\ttalked %d letters" % singleInstance.talkSize
 		print "\tlinked %d pages" % singleInstance.linkCount
 
-
 def chatFileOpener(fileName):
 	file = open(fileName, 'r')
 	return file
@@ -116,9 +115,9 @@ def blankLinePasser(passFile,lineNum):
 	for passNum in range(lineNum):
 		next(passFile)
 
-def lineTypeChecker(chatSingleLine, memberList):
+def lineTypeChecker(chatSingleLine, memberList, recentChatter):
 	
-	if(extraLineChecker(chatSingleLine)):
+	if(mainLineChecker(chatSingleLine)):
 		dividerPos = chatSingleLine.find(', ')
 
 		dateLine = chatDateChecker(chatSingleLine[:dividerPos])
@@ -127,34 +126,37 @@ def lineTypeChecker(chatSingleLine, memberList):
 
 		if(chatContentLine.find(' : ') > -1):
 			lineType = 'chat'
-			chatLineChecker(chatContentLine, memberList)
+			presentChatter = chatLineChecker(chatContentLine, memberList)
+			return presentChatter
+
 		elif(chatContentLine.find('초대했습니다.') > -1):
 			lineType = 'invite'
 			inviteLineChecker(chatContentLine, memberList, dateLine)
+			
 		else:
 			lineType = 'date'
 
 	elif(chatSingleLine != '\n'):
 		lineType = 'extra'
+		presentChatter = talkLineChecker(chatSingleLine, recentChatter)
+		return presentChatter
 	else:
 		lineType = 'blank'
 
-	return lineType
-
-def extraLineChecker(chatSingleLine):
+def mainLineChecker(chatSingleLine):
 	yearPos = chatSingleLine.find('년')
 	monthPos = chatSingleLine.find('월')
 	dayPos = chatSingleLine.find('일')
 	meridemPos = chatSingleLine.find('오')
 	timeDividerPos = chatSingleLine.find(':')
 
-	extraLineCheck = ((yearPos == 4) and
+	mainLineCheck = ((yearPos == 4) and
 	((monthPos > 8) and (monthPos < 11)) and 
 	((dayPos>13) and (dayPos<17)) and
 	((meridemPos > 17) and (meridemPos < 21)) and
 	((timeDividerPos > 25) and (timeDividerPos < 30)))
 
-	return extraLineCheck
+	return mainLineCheck
 
 def inviteLineChecker(inviteLine, memberList, inviteDate):
 	inviteMemberData = inviteLine
@@ -170,6 +172,7 @@ def inviteLineChecker(inviteLine, memberList, inviteDate):
 			if chatterSearcher(memberList, inviteMemberData[dataIndex]).name == 'UnknownName':
 				chatterInfo = chatMember(inviteMemberData[dataIndex], inviteDate)
 				memberList.append(chatterInfo)
+
 def chatterSearcher(memberList, searchMemberName):
 	targetInstance = chatMember('UnknownName', 'UnknownDate')
 
@@ -218,6 +221,7 @@ def talkLineChecker(talkLine, talker):
 	if(talkLine != '\n'):
 		talkLength = len(talkLine.decode(decodeType))-1
 		talker.talkCounter(talkLength)
+	return talker
 	
 def fileChecker(fileLine, fileUploader, dotPos):
 	supportFileList = ['mp4', 'm4v', 'avi', 'asf', 'wmv', 'mkv', 'ts', 'mpg', 'mpeg', 'mov', 'flv', 'ogv', 'doc', 'docx', 'hwp', 'txt', 'rtf', 'xml', 'pdf', 'wks', 'wps', 'xps', 'md', 'odf', 'odt', 'ods', 'odp', 'csv', 'tsv', 'xls', 'xlsx', 'ppt', 'pptx', 'pages', 'key', 'numbers', 'show', 'ce', 'zip', 'gz', 'bz2', 'rar', '7z', 'lzh', 'alz']
@@ -260,4 +264,4 @@ def chatLineChecker(chatLine, memberList):
 			
 		else:
 			talkLineChecker(chatting, chatterInstance)
-
+	return chatterInstance
