@@ -2,7 +2,7 @@
 from katalkative_func import *
 
 decodeType = 'utf8'
-logFileName = "../KakaoTalkChats.txt"
+logFileName = "../Katalkative_texts/KakaoTalkChats_bigfile.txt"
 logFile = chatFileOpener(logFileName)
 
 logFilePresentLine = next(logFile)
@@ -16,25 +16,15 @@ logSavedDate = chatDateChecker(slicedDateLine)
 
 blankLinePasser(logFile, 2)
 
-#i = 5
+i = 5
 
 chatMemberList = []
 previousChatter = 'Blank'
 for logFilePresentLine in logFile:
-		previousChatter = lineTypeChecker(logFilePresentLine, chatMemberList, previousChatter)
-'''
-	try:
-		lineType = lineTypeChecker(logFilePresentLine, chatMemberList)
+	previousChatter = lineTypeChecker(logFilePresentLine, chatMemberList, previousChatter)
+	#print i
+	#i += 1
 
-	except:
-		print 'errored line',
-		print logFilePresentLine.decode(decodeType)
-'''
-'''
-	print i, 
-	print logFilePresentLine.decode(decodeType)
-	i += 1
-'''
 print "Chatting Title : " + chatTitle
 print "Chatting Member Number : %d" % chatMemberNum
 print "Log is saved at " + str(logSavedDate)
