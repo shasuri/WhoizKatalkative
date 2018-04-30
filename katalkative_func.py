@@ -1,8 +1,24 @@
 #-*- coding: utf-8 -*-
 import datetime
 
+class chatRoom:
+	def __init__(self, title, memberNum):
+		self.title = title
+		self.memberNum = memberNum
+		self.memberList = []
+		self.preChatMember = ''
+	
+	def setLogSaveDate(self, date):
+		self.logSaveDate = date
+
+	def appendMember(self, memberInstance):
+		self.memberList.append(memberInstance)
+
+	def setPreChatMember(self, preChatMember):
+		self.preChatMember = preChatMember
+
 class chatMember:
-	def __init__(self, name, invitedDate):
+	def __init__(self, name, invitedDate=''):
 		self.name = name
 		self.invitedDate = invitedDate		
 		
@@ -56,21 +72,25 @@ class chatMember:
 		self.emoticonCount += 1
 		self.chatCounter()
 
-def printMemberInfo(memberList):
+def printChatInfo(chatRoomInfo):
 	decodeType = 'utf-8'
 	
-	for singleInstance in memberList:
-		print (singleInstance.name).decode(decodeType) + "'s Information : "
-		print "\tInvited date : " + str(singleInstance.invitedDate)
-		print "\tchatted %d times" % singleInstance.chatCount
-		print "\ttalked %d times" % singleInstance.talkCount
-		print "\ttalked %d letters" % singleInstance.talkSize
-		print "\tlinked %d pages" % singleInstance.linkCount
-		print "\tused %d emoticons" % singleInstance.emoticonCount
-		print "\tuploaded %d images" % singleInstance.imageCount
-		print "\ttaged %d hashtags" % singleInstance.hashtagCount
-		print "\tuploded %d videos" % singleInstance.videoCount
-		print "\tuploded %d files(except image and video)" % singleInstance.fileCount
+	print "Chatting Title : " + (chatRoomInfo.title).decode(decodeType)
+	print "Chatting Member Number : %d" % chatRoomInfo.memberNum
+	print "Log is saved at " + str(chatRoomInfo.logSaveDate)
+	
+	for memberInfo in chatRoomInfo.memberList:
+		print (memberInfo.name).decode(decodeType) + "'s Information : "
+		print "\tInvited date : " + str(memberInfo.invitedDate)
+		print "\tchatted %d times" % memberInfo.chatCount
+		print "\ttalked %d times" % memberInfo.talkCount
+		print "\ttalked %d letters" % memberInfo.talkSize
+		print "\tlinked %d pages" % memberInfo.linkCount
+		print "\tused %d emoticons" % memberInfo.emoticonCount
+		print "\tuploaded %d images" % memberInfo.imageCount
+		print "\ttaged %d hashtags" % memberInfo.hashtagCount
+		print "\tuploded %d videos" % memberInfo.videoCount
+		print "\tuploded %d etc files" % memberInfo.fileCount
 
 def chatFileOpener(fileName):
 	file = open(fileName, 'r')
@@ -84,7 +104,9 @@ def chatRoomInfoChecker(fileLine):
         
         memberNum = int(splitedLine[-3])
         
-        return title, memberNum
+        chatRoomInfo = chatRoom(title, memberNum)
+
+        return chatRoomInfo
 
 def chatDateChecker(dateLine):
 
@@ -120,7 +142,7 @@ def blankLinePasser(passFile,lineNum):
 	for passNum in range(lineNum):
 		next(passFile)
 
-def lineTypeChecker(chatSingleLine, memberList, recentChatter):
+def lineTypeChecker(chatSingleLine, chatRoom):
 	
 	if(mainLineChecker(chatSingleLine)):
 		dividerPos = chatSingleLine.find(', ')
@@ -131,23 +153,22 @@ def lineTypeChecker(chatSingleLine, memberList, recentChatter):
 
 		if(chatContentLine.find(' : ') > -1):
 			lineType = 'chat'
-			presentChatter = chatLineChecker(chatContentLine, memberList)
-			return presentChatter
+			chatLineChecker(chatContentLine, chatRoom)
+			
 
 		elif(chatContentLine.find('초대했습니다.') > -1):
 			lineType = 'invite'
-			inviteLineChecker(chatContentLine, memberList, dateLine)
+			inviteLineChecker(chatContentLine, chatRoom, dateLine)
 			
 		else:
 			lineType = 'date'
 
 	elif(chatSingleLine != '\n'):
 		lineType = 'extra'
-		presentChatter = talkLineChecker(chatSingleLine, recentChatter)
-		return presentChatter
+		talkLineChecker(chatSingleLine, chatRoom.preChatMember)
+		
 	else:
 		lineType = 'blank'
-		return recentChatter
 
 def mainLineChecker(chatSingleLine):
 	yearPos = chatSingleLine.find('년')
@@ -164,57 +185,55 @@ def mainLineChecker(chatSingleLine):
 
 	return mainLineCheck
 
-def inviteLineChecker(inviteLine, memberList, inviteDate):
+def inviteLineChecker(inviteLine, inviteChatRoom, inviteDate):
+	#ex)이재욱님이 012님, 조민정님, 윤승희님, 이우진님과 이창율님을 초대했습니다.
 	inviteMemberData = inviteLine
 	inviteMemberData = inviteMemberData.split('님')
 	inviteMemberData.pop()
 	
+	preMemberList = inviteChatRoom.memberList
+
 	for dataIndex in range(len(inviteMemberData)):
 		if(dataIndex != 0):
 			spacePos = inviteMemberData[dataIndex].find(' ')
-			inviteMemberData[dataIndex] = inviteMemberData[dataIndex][spacePos+1:]
+			inviteMemberData[dataIndex] = (inviteMemberData[dataIndex])[spacePos+1:]
 		
-		if not(dataIndex == 0 and memberList):
-			if chatterSearcher(memberList, inviteMemberData[dataIndex]).name == 'UnknownName':
+		if not(dataIndex == 0 and preMemberList):
+			if not chatterSearcher(preMemberList, inviteMemberData[dataIndex]):
 				chatterInfo = chatMember(inviteMemberData[dataIndex], inviteDate)
-				memberList.append(chatterInfo)
+				inviteChatRoom.appendMember(chatterInfo)
 
-def chatterSearcher(memberList, searchMemberName):
-	targetInstance = chatMember('UnknownName', 'UnknownDate')
+def chatterSearcher(memberList, targetMemberName):
+	for searchMember in memberList:
+		if searchMember.name == targetMemberName:
+			return searchMember
 
-	for searchInstance in memberList:
-		if searchInstance.name == searchMemberName:
-			targetInstance = searchInstance
-			break
+	return False
 
-	return targetInstance
-
-def linkChecker(linkChat, linkUploader, linkPos):
-	linkUploader.linkCounter()
-
-	linkLine = linkChat[linkPos:]
-	linkEnd = linkLine.find(' ')
+def linkLineChecker(linkLine, linkUploader):
+	linkPos = linkPosFinder(linkLine)
 	
-	afterLink = ''
+	if linkPos > -1 :
+		linkUploader.linkCounter()
+		linkSlicedLine = linkLine[linkPos:]
+		
+		spacePos = linkSlicedLine.find(' ')
 
-	if(linkEnd > -1):
-		linkLine = linkChat[linkPos:linkEnd]
-		afterLink = linkChat[linkEnd:]
-	
-	beforeLink = linkChat[:linkPos]
-	
-	afterLinkPos = linkPosFinder(afterLink)
-	
-	if(afterLinkPos > -1):
-		afterLink = linkChecker(afterLink, linkUploader, afterLinkPos)
-	
-	exceptChat = beforeLink + afterLink
-	
-	return exceptChat
+		if(spacePos == -1):
+			fixedLine = linkLine[:linkPos]
+		else:
+			fixedLine = linkLine[:linkPos]+linkLine[spacePos+linkPos:]
+		
+		link = linkSlicedLine[:spacePos]
 
-def linkPosFinder(assumptLinkChat):
-	httpPos = assumptLinkChat.find('http://')
-	httpsPos = assumptLinkChat.find('https://')
+		return linkLineChecker(fixedLine, linkUploader)
+	
+	else:
+		return linkLine
+
+def linkPosFinder(linkLine):
+	httpPos = linkLine.find('http://')
+	httpsPos = linkLine.find('https://')
 	linkPos = -1
 	
 	if(httpPos > -1):
@@ -226,76 +245,79 @@ def linkPosFinder(assumptLinkChat):
 
 def talkLineChecker(talkLine, talker):
 	decodeType = 'utf-8'
-
+	
 	if(talkLine.find('(이모티콘)') == 0):
 		talker.emoticonCounter()
 		talkLine = talkLine[14:]
-
-	linkPos = linkPosFinder(talkLine)
 	
-	if linkPos > -1:
-		talkLine = linkChecker(talkLine, talker, linkPos)
+	elif(talkLine.find('(emoticon)') == 0):
+		talker.emoticonCounter()
+		talkLine = talkLine[10:]
 
+	#print talkLine.decode(decodeType)
+
+	talkLine = linkLineChecker(talkLine, talker)
+	
 	if(talkLine != '\n'):
+		talkLength = len(list(talkLine.decode(decodeType)))-1
+
+		'''
 		try:
 			talkLength = len(talkLine.decode(decodeType))-1
 		except:
 			talkLength = len(talkLine)/3
+		'''
 		talker.talkCounter(talkLength)
-	return talker
 	
-def fileChecker(fileLine, fileUploader, dotPos):
-	supportFileList = ['mp4', 'm4v', 'avi', 'asf', 'wmv', 'mkv', 'ts', 'mpg', 'mpeg', 'mov', 'flv', 'ogv', 'doc', 'docx', 'hwp', 'txt', 'rtf', 'xml', 'pdf', 'wks', 'wps', 'xps', 'md', 'odf', 'odt', 'ods', 'odp', 'csv', 'tsv', 'xls', 'xlsx', 'ppt', 'pptx', 'pages', 'key', 'numbers', 'show', 'ce', 'zip', 'gz', 'bz2', 'rar', '7z', 'lzh', 'alz']
+def fileUploadChecker(fileUploadLine):
 	
-	assumptExtension = fileLine[dotPos+1:-1]
+	fileExist = False	
+	revDotPos = fileUploadLine.rfind('.')
+	
+	if revDotPos > -1:
+		fileLength = len(fileUploadLine)
+		
+		if fileLength > 6 and ((revDotPos == fileLength - 4) or (revDotPos == fileLength - 5) or (revDotPos == fileLength - 6)):
 
-	fileExist = False
+			supportFileList = ['mp3', 'wav', 'flac', 'tta', 'tak', 'aac', 'wma', 'ogg', 'm4a','doc', 'docx', 'hwp', 'txt', 'rtf', 'xml', 'pdf', 'wks', 'wps', 'xps', 'md', 'odf', 'odt', 'ods', 'odp', 'csv', 'tsv', 'xls', 'xlsx', 'ppt', 'pptx', 'pages', 'key', 'numbers', 'show', 'ce', 'zip', 'gz', 'bz2', 'rar', '7z', 'lzh', 'alz']
 	
-	for fileExtension in supportFileList:
-		if (assumptExtension == fileExtension):
-			fileUploader.fileCounter()
-			fileExist = True
-			break
+			fileExtension = fileUploadLine[revDotPos+1:-1]
+						
+			if fileExtension in supportFileList:
+				fileExist = True
 
 	return fileExist
 
-def chatLineChecker(chatLine, memberList):
+def chatLineChecker(chatLine, chatRoom):
 
 	chattingDividerPos = chatLine.find(' : ')
 	
-	chatter = chatLine[:chattingDividerPos]
+	chatterName = chatLine[:chattingDividerPos]
 
 	chatting = chatLine[chattingDividerPos+3:]
-	
-	chatterInstance = chatterSearcher(memberList, chatter)	
-	
-	if(chatterInstance.name == 'UnknownName'):
-		newChatter = chatMember(chatter, 'UnknownDate')
-		memberList.append(newChatter)
-		chatterInstance = newChatter
-	
+
+	chatterInstance = chatterSearcher(chatRoom.memberList, chatterName)
+	if not chatterInstance :
+		chatterInstance = chatMember(chatterName)
+		chatRoom.appendMember(chatterInstance)
+
+	chatRoom.setPreChatMember(chatterInstance)
+
 	if(chatting == '<사진>\n'):
 		chatterInstance.imageCounter()
+	
 	elif(chatting == '<동영상>\n'):
 		chatterInstance.videoCounter()
+	
 	elif(chatting.find('#') == 0):
 		chatterInstance.hashtagCounter()
+	
 	elif(chatting.find('<연락처') == 0):
 		chatterInstance.shareAddressCounter()
-	else:
-		dotPos = chatting.find('.')
-		chattingSize = len(chatting)
-		fileExist = False
-		#print chatting.decode('utf-8')
-		#print chatting[dotPos:].decode('utf-8')
-		#print chattingSize - dotPos
-
-		if chattingSize > 6 and ((dotPos == chattingSize - 4) or (dotPos == chattingSize - 5) or (dotPos == chattingSize - 6)):
-			#print 'Assumpt file',
-			
-			fileExist = fileChecker(chatting, chatterInstance, dotPos)
+	
+	elif(fileUploadChecker(chatting)):
+		chatterInstance.fileCounter()
 		
-		if not fileExist:
-			talkLineChecker(chatting, chatterInstance)
-	return chatterInstance
+	else:
+		talkLineChecker(chatting, chatterInstance)
 	
