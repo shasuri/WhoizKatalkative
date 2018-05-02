@@ -13,11 +13,8 @@ chatRoomInstance.setLogSaveDate(chatDateChecker(logFilePresentLine[19:]))
 
 blankLinePasser(logFile, 2)
 
-i = 5
-
 for logFilePresentLine in logFile:
 	lineTypeChecker(logFilePresentLine, chatRoomInstance)
-	print i
-	i += 1
 
+printChatInfo(chatRoomInstance)
 logFile.close()
