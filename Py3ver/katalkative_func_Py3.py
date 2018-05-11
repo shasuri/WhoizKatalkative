@@ -1,6 +1,9 @@
 #-*- coding: utf-8 -*-
 import datetime
 
+from enum import Enum
+
+
 class chatRoom:
 	def __init__(self, title, memberNum):
 		self.title = title
@@ -17,89 +20,67 @@ class chatRoom:
 	def setPreChatMember(self, preChatMember):
 		self.preChatMember = preChatMember
 
+
+class memberInfo(Enum):
+	chat = 0
+	talk = 1
+	emoticon = 2
+	image = 3
+	link = 4
+	video = 5
+	hashtag = 6
+	file = 7
+	address = 8
+	voice = 9
+	talkSize = 10
+
+
 class chatMember:
 	def __init__(self, name, invitedDate=''):
+
 		self.name = name
 		self.invitedDate = invitedDate
-		
-		self.chatCount = 0
-		
-		self.talkSize = 0
-		self.talkCount = 0
-		
-		self.emoticonCount = 0
-		self.imageCount = 0
-		self.linkCount = 0
-		self.videoCount = 0
-		self.shareAddressCounter = 0
-		self.hashtagCount = 0
-		self.fileCount = 0
-		self.voiceCount = 0
-	
 
-	def chatCounter(self):
-		self.chatCount += 1
-	
-	def talkCounter(self, talkLength):
-		self.talkCount += 1
-		self.talkSize += talkLength
+		self.infoList = [0 for infoIndex in range(11)]
 
-	def imageCounter(self):
-		self.imageCount += 1
+	def infoCounter(self, info):
+		self.infoList[info.value] += 1
 
-	def linkCounter(self):
-		self.linkCount += 1
+	def talkAdder(self, talkLength):
+		self.infoList[memberInfo.talkSize.value] += talkLength
 
-	def shareAddressCounter(self):
-		self.shareAddressCount += 1
-
-	def videoCounter(self):
-		self.videoCount += 1
-
-	def hashtagCounter(self):
-		self.hashtagCount += 1
-
-	def fileCounter(self):
-		self.fileCount += 1
-
-	def emoticonCounter(self):
-		self.emoticonCount += 1
-
-	def voiceCounter(self):
-		self.voiceCount += 1
 
 def printChatInfo(chatRoomInfo):
-	decodeType = 'utf-8'
-	
-	print("Chatting Title : " + (chatRoomInfo.title).decode(decodeType))
+
+	print("Chatting Title : " + (chatRoomInfo.title))
 	print("Chatting Member Number : %d" % chatRoomInfo.memberNum)
 	print("Log is saved at " + str(chatRoomInfo.logSaveDate))
 	
-	for memberInfo in chatRoomInfo.memberList:
-		print((memberInfo.name).decode(decodeType) + "'s Information : ")
-		print("\tInvited date : " + str(memberInfo.invitedDate))
-		print("\tchatted %d times" % memberInfo.chatCount)
-		print("\ttalked %d times" % memberInfo.talkCount)
-		print("\ttalked %d letters" % memberInfo.talkSize)
-		print("\tlinked %d pages" % memberInfo.linkCount)
-		print("\tused %d emoticons" % memberInfo.emoticonCount)
-		print("\tuploaded %d images" % memberInfo.imageCount)
-		print("\ttaged %d hashtags" % memberInfo.hashtagCount)
-		print("\tuploded %d videos" % memberInfo.videoCount)
-		print("\tuploded %d voice records" % memberInfo.voiceCount)
-		print("\tuploded %d etc files" % memberInfo.fileCount)
+	for singleMember in chatRoomInfo.memberList:
+		print((singleMember.name)+ "'s Information : ")
+		print("\tInvited date : " + str(singleMember.invitedDate))
+		print("\tchatted %d times" % singleMember.infoList[memberInfo.chat.value])
+		print("\ttalked %d times" % singleMember.infoList[memberInfo.talk.value])
+		print("\ttalked %d letters" % singleMember.infoList[memberInfo.talkSize.value])
+		print("\tlinked %d pages" % singleMember.infoList[memberInfo.link.value])
+		print("\tused %d emoticons" % singleMember.infoList[memberInfo.emoticon.value])
+		print("\tuploaded %d images" % singleMember.infoList[memberInfo.image.value])
+		print("\ttaged %d hashtags" % singleMember.infoList[memberInfo.hashtag.value])
+		print("\tuploded %d videos" % singleMember.infoList[memberInfo.video.value])
+		print("\tuploded %d voice records" % singleMember.infoList[memberInfo.voice.value])
+		print("\tuploded %d etc files" % singleMember.infoList[memberInfo.file.value])
 
-def chatFileOpener(fileName):
-	file = open(fileName, 'r', encoding = 'utf-8')
+def chatFileOpener(fileName, fileEncode):
+	file = open(fileName, 'r', encoding = fileEncode)
 	return file
 
 def chatRoomInfoChecker(fileLine):
-    slicedLine = fileLine[3:]
-    splitedLine = slicedLine.split()
+    slicedLine = fileLine[1:]
+    slicedLine = slicedLine.split()
     
-    title = " ".join(splitedLine[:-3])
+    title = " ".join(slicedLine[:-3])
     
-    memberNum = int(splitedLine[-3])
+    memberNum = int(slicedLine[-3])
     
     chatRoomInfo = chatRoom(title, memberNum)
 
@@ -108,10 +89,10 @@ def chatRoomInfoChecker(fileLine):
 def chatDateChecker(dateLine):
 
 	splitedDateData = dateLine.split()
-	
-	year = int(splitedDateData[0][:-3])	
-	month = int(splitedDateData[1][:-3])
-	day = int(splitedDateData[2][:-3])
+
+	year = int(splitedDateData[0][:-1])	
+	month = int(splitedDateData[1][:-1])
+	day = int(splitedDateData[2][:-1])
 
 	if (splitedDateData[3] == '오전'):
 		meridem = 'AM'
@@ -175,10 +156,10 @@ def mainLineChecker(chatSingleLine):
 	timeDividerPos = chatSingleLine.find(':')
 
 	mainLineCheck = ((yearPos == 4) and
-	((monthPos > 8) and (monthPos < 11)) and 
-	((dayPos>13) and (dayPos<17)) and
-	((meridemPos > 17) and (meridemPos < 21)) and
-	((timeDividerPos > 25) and (timeDividerPos < 30)))
+	((monthPos > 6) and (monthPos < 9)) and 
+	((dayPos>9) and (dayPos<13)) and
+	((meridemPos > 11) and (meridemPos < 15)) and
+	((timeDividerPos > 15) and (timeDividerPos < 20)))
 
 	return mainLineCheck
 
@@ -211,7 +192,7 @@ def linkLineChecker(linkLine, linkUploader):
 	linkPos = linkPosFinder(linkLine)
 	
 	if linkPos > -1 :
-		linkUploader.linkCounter()
+		linkUploader.infoCounter(memberInfo.link)
 		linkSlicedLine = linkLine[linkPos:]
 		
 		spacePos = linkSlicedLine.find(' ')
@@ -241,30 +222,26 @@ def linkPosFinder(linkLine):
 	return linkPos
 
 def talkLineChecker(talkLine, talker):
-	decodeType = 'utf-8'
-	
-	if(talkLine.find('(이모티콘)') == 0):
-		talker.emoticonCounter()
-		talkLine = talkLine[14:]
-	
-	elif(talkLine.find('(emoticon)') == 0):
-		talker.emoticonCounter()
-		talkLine = talkLine[10:]
-
-	elif (talkLine.find('[사진]') == 0):
-		talker.imageCounter()
-		talkLine = talkLine[8:]
-
 	talkLine = linkLineChecker(talkLine, talker)
 	
-	if(talkLine != '\n'):
-		try:
-			talkLength = len(talkLine.decode(decodeType))-1
-		except:
-			talkLength = len(list(talkLine.decode(decodeType)))-1
-		
-		talker.talkCounter(talkLength)
+	talkLength = len(talkLine)-1
+	talker.talkAdder(talkLength)
+
+def headLineChecker(headLine, talker):
+	if(headLine.find('(이모티콘)') == 0):
+		talker.infoCounter(memberInfo.emoticon)
+		headLine = headLine[6:]
 	
+	elif(headLine.find('(emoticon)') == 0):
+		talker.infoCounter(memberInfo.emoticon)
+		headLine = headLine[10:]
+
+	elif (headLine.find('[사진]') == 0):
+		talker.infoCounter(memberInfo.image)
+		headLine = headLine[4:]
+
+	return headLine
+
 def fileUploadChecker(fileUploadLine):
 	
 	fileExist = False	
@@ -299,26 +276,29 @@ def chatLineChecker(chatLine, chatRoom):
 
 	chatRoom.setPreChatMember(chatterInstance)
 
-	chatterInstance.chatCounter()
+	chatterInstance.infoCounter(memberInfo.chat)
 
 	if(chatting == '<사진>\n'):
-		chatterInstance.imageCounter()
+		chatterInstance.infoCounter(memberInfo.image)
 	
 	elif(chatting == '<동영상>\n'):
-		chatterInstance.videoCounter()
+		chatterInstance.infoCounter(memberInfo.video)
 	
 	elif(chatting.find('#') == 0):
-		chatterInstance.hashtagCounter()
+		chatterInstance.infoCounter(memberInfo.hashtag)
 	
 	elif(chatting.find('<연락처') == 0):
-		chatterInstance.shareAddressCounter()
+		chatterInstance.infoCounter(memberInfo.address)
 	
 	elif(chatting == ('<음성메시지>\n')):
-		chatterInstance.voiceCounter()
+		chatterInstance.infoCounter(memberInfo.voice)
 	
 	elif(fileUploadChecker(chatting)):
-		chatterInstance.fileCounter()
+		chatterInstance.infoCounter(memberInfo.file)
 		
-	else:		
-		talkLineChecker(chatting, chatterInstance)
-	
+	else:
+		chatting = headLineChecker(chatting, chatterInstance)
+		
+		if(chatting != '\n'):
+			chatterInstance.infoCounter(memberInfo.talk)
+			talkLineChecker(chatting, chatterInstance)

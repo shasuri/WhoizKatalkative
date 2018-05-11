@@ -40,8 +40,10 @@ class chatMember:
 	def chatCounter(self):
 		self.chatCount += 1
 	
-	def talkCounter(self, talkLength):
+	def talkCounter(self):
 		self.talkCount += 1
+
+	def talkSizeAdder(self, talkLength):
 		self.talkSize += talkLength
 
 	def imageCounter(self):
@@ -262,7 +264,7 @@ def talkLineChecker(talkLine, talker):
 		except:
 			talkLength = len(list(talkLine.decode(decodeType)))-1
 		
-		talker.talkCounter(talkLength)
+		talker.talkSizeAdder(talkLength)
 	
 def fileUploadChecker(fileUploadLine):
 	
@@ -319,5 +321,7 @@ def chatLineChecker(chatLine, chatRoom):
 		chatterInstance.fileCounter()
 		
 	else:		
+		chatterInstance.talkCounter()
 		talkLineChecker(chatting, chatterInstance)
+
 	

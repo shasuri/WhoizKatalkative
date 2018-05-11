@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
-from katalkative_func import *
+from katalkative_func_Py2 import *
 
 decodeType = 'utf-8'
-logFileName = "../Katalkative_texts/KakaoTalkChats_bigfile.txt"
+logFileName = ""#input path
 logFile = chatFileOpener(logFileName)
 
 logFilePresentLine = next(logFile)
