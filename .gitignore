@@ -7,5 +7,5 @@ katalkative_func.pyc
 __pycache__/katalkative_func.cpython-36.pyc
 >>>>>>> pyDir
 *.pyc
-Py2ver/.idea/
-Py3ver/.idea/
+Py2ver/.idea/*
+Py3ver/.idea/*
