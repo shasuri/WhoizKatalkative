@@ -9,3 +9,5 @@ __pycache__/katalkative_func.cpython-36.pyc
 *.pyc
 Py2ver/.idea/*
 Py3ver/.idea/*
+Py3ver/venv/*
+

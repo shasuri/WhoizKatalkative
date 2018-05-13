@@ -1,304 +1,317 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import datetime
-
 from enum import Enum
 
 
-class chatRoom:
-	def __init__(self, title, memberNum):
-		self.title = title
-		self.memberNum = memberNum
-		self.memberList = []
-		self.preChatMember = ''
-	
-	def setLogSaveDate(self, date):
-		self.logSaveDate = date
+class ChatRoom:
+    def __init__(self, title, member_number):
+        self.title = title
+        self.memberNum = member_number
+        self.memberList = []
+        self.preChatMember = ''
+        self.logSaveDate = ''
 
-	def appendMember(self, memberInstance):
-		self.memberList.append(memberInstance)
+    def set_log_saved_date(self, date):
+        self.logSaveDate = date
 
-	def setPreChatMember(self, preChatMember):
-		self.preChatMember = preChatMember
+    def append_member(self, member):
+        self.memberList.append(member)
 
-
-class memberInfo(Enum):
-	chat = 0
-	talk = 1
-	emoticon = 2
-	image = 3
-	link = 4
-	video = 5
-	hashtag = 6
-	file = 7
-	address = 8
-	voice = 9
-	talkSize = 10
+    def set_chatted_member(self, chatted_member):
+        self.preChatMember = chatted_member
 
 
-class chatMember:
-	def __init__(self, name, invitedDate=''):
+class MemberInfo(Enum):
+    chat = 0
+    talk = 1
+    emoticon = 2
+    image = 3
+    link = 4
+    video = 5
+    hashtag = 6
+    file = 7
+    address = 8
+    voice = 9
+    talkSize = 10
 
-		self.name = name
-		self.invitedDate = invitedDate
 
-		self.infoList = [0 for infoIndex in range(11)]
+class ChatMember:
+    def __init__(self, name, invite_date=''):
+        self.name = name
+        self.invitedDate = invite_date
 
-	def infoCounter(self, info):
-		self.infoList[info.value] += 1
+        self.infoList = [0 for infoIndex in range(11)]
 
-	def talkAdder(self, talkLength):
-		self.infoList[memberInfo.talkSize.value] += talkLength
+    def info_counter(self, info):
+        self.infoList[info.value] += 1
+
+    def talk_counter(self, talk_length):
+        self.infoList[MemberInfo.talkSize.value] += talk_length
 
 
-def printChatInfo(chatRoomInfo):
+def print_chat_info(chat_room):
+    print("Chatting Title : " + chat_room.title)
+    print("Chatting Member Number : %d" % chat_room.memberNum)
+    print("Log is saved at " + str(chat_room.logSaveDate))
 
-	print("Chatting Title : " + (chatRoomInfo.title))
-	print("Chatting Member Number : %d" % chatRoomInfo.memberNum)
-	print("Log is saved at " + str(chatRoomInfo.logSaveDate))
-	
-	for singleMember in chatRoomInfo.memberList:
-		print((singleMember.name)+ "'s Information : ")
-		print("\tInvited date : " + str(singleMember.invitedDate))
-		print("\tchatted %d times" % singleMember.infoList[memberInfo.chat.value])
-		print("\ttalked %d times" % singleMember.infoList[memberInfo.talk.value])
-		print("\ttalked %d letters" % singleMember.infoList[memberInfo.talkSize.value])
-		print("\tlinked %d pages" % singleMember.infoList[memberInfo.link.value])
-		print("\tused %d emoticons" % singleMember.infoList[memberInfo.emoticon.value])
-		print("\tuploaded %d images" % singleMember.infoList[memberInfo.image.value])
-		print("\ttaged %d hashtags" % singleMember.infoList[memberInfo.hashtag.value])
-		print("\tuploded %d videos" % singleMember.infoList[memberInfo.video.value])
-		print("\tuploded %d voice records" % singleMember.infoList[memberInfo.voice.value])
-		print("\tuploded %d etc files" % singleMember.infoList[memberInfo.file.value])
+    for single_member in chat_room.memberList:
+        print(single_member.name + "'s Information : ")
+        print("\tInvited date : " + str(single_member.invitedDate))
+        print("\tchatted %d times" % single_member.infoList[MemberInfo.chat.value])
+        print("\ttalked %d times" % single_member.infoList[MemberInfo.talk.value])
+        print("\ttalked %d letters" % single_member.infoList[MemberInfo.talkSize.value])
+        print("\tlinked %d pages" % single_member.infoList[MemberInfo.link.value])
+        print("\tused %d emoticons" % single_member.infoList[MemberInfo.emoticon.value])
+        print("\tuploaded %d images" % single_member.infoList[MemberInfo.image.value])
+        print("\ttaged %d hashtags" % single_member.infoList[MemberInfo.hashtag.value])
+        print("\tuploded %d videos" % single_member.infoList[MemberInfo.video.value])
+        print("\tuploded %d voice records" % single_member.infoList[MemberInfo.voice.value])
+        print("\tuploded %d etc files" % single_member.infoList[MemberInfo.file.value])
 
-def chatFileOpener(fileName, fileEncode):
-	file = open(fileName, 'r', encoding = fileEncode)
-	return file
 
-def chatRoomInfoChecker(fileLine):
-    slicedLine = fileLine[1:]
-    slicedLine = slicedLine.split()
-    
-    title = " ".join(slicedLine[:-3])
-    
-    memberNum = int(slicedLine[-3])
-    
-    chatRoomInfo = chatRoom(title, memberNum)
+def log_file_opener(log_file_encoding='utf-8'):
+    log_file_name = input()
+    log_file = open(log_file_name, 'r', encoding=log_file_encoding)
+    return log_file
 
-    return chatRoomInfo
 
-def chatDateChecker(dateLine):
+def chat_room_info_checker(info_line):
+    sliced_line = info_line[1:]
+    sliced_line = sliced_line.split()
+    if '님과' in info_line:
+        title = " ".join(sliced_line[:-4])
+        member_number = int(sliced_line[-4])
 
-	splitedDateData = dateLine.split()
+    else:
+        title = " ".join(sliced_line[:-3])
+        member_number = int(sliced_line[-3])
 
-	year = int(splitedDateData[0][:-1])	
-	month = int(splitedDateData[1][:-1])
-	day = int(splitedDateData[2][:-1])
+    chat_room = ChatRoom(title, member_number)
 
-	if (splitedDateData[3] == '오전'):
-		meridem = 'AM'
-	elif (splitedDateData[3] == '오후'):
-		meridem = 'PM'
-	else:
-		meridem = 'Error'
-	
-	dividerPos = splitedDateData[4].find(":")
-	
-	hour = int(splitedDateData[4][:dividerPos])
-	if(hour == 12):
-		if(meridem == 'AM'):
-			hour -= 12
-		elif(meridem == 'PM'):
-			pass
-	elif(meridem == 'PM'):
-		hour += 12
+    return chat_room
 
-	minute = int(splitedDateData[4][dividerPos+1:])
 
-	return datetime.datetime(year,month,day,hour,minute)
+def date_checker(date_line):
+    date_data = date_line.split()
 
-def blankLinePasser(passFile,lineNum):
-	for passNum in range(lineNum):
-		next(passFile)
+    year = int(date_data[0][:-1])
+    month = int(date_data[1][:-1])
+    day = int(date_data[2][:-1])
 
-def lineTypeChecker(chatSingleLine, chatRoom):
-	
-	if(mainLineChecker(chatSingleLine)):
-		dividerPos = chatSingleLine.find(', ')
+    if date_data[3] == '오전':
+        meridem = 'AM'
+    elif date_data[3] == '오후':
+        meridem = 'PM'
+    else:
+        meridem = 'Error'
 
-		dateLine = chatDateChecker(chatSingleLine[:dividerPos])
+    divider_pos = date_data[4].find(":")
 
-		chatContentLine = chatSingleLine[dividerPos+2:]
+    hour = int(date_data[4][:divider_pos])
+    if hour == 12:
+        if meridem == 'AM':
+            hour -= 12
+        elif meridem == 'PM':
+            pass
+    elif meridem == 'PM':
+        hour += 12
 
-		if(chatContentLine.find(' : ') > -1):
-			lineType = 'chat'
-			chatLineChecker(chatContentLine, chatRoom)
-			
+    minute = int(date_data[4][divider_pos + 1:])
 
-		elif(chatContentLine.find('초대했습니다.') > -1):
-			lineType = 'invite'
-			inviteLineChecker(chatContentLine, chatRoom, dateLine)
-			
-		else:
-			lineType = 'date'
+    return datetime.datetime(year, month, day, hour, minute)
 
-	elif(chatSingleLine != '\n'):
-		lineType = 'extra'
-		talkLineChecker(chatSingleLine, chatRoom.preChatMember)
-		
-	else:
-		lineType = 'blank'
 
-def mainLineChecker(chatSingleLine):
-	yearPos = chatSingleLine.find('년')
-	monthPos = chatSingleLine.find('월')
-	dayPos = chatSingleLine.find('일')
-	meridemPos = chatSingleLine.find('오')
-	timeDividerPos = chatSingleLine.find(':')
+def blank_line_passer(pass_file, pass_line_num):
+    for passNum in range(pass_line_num):
+        next(pass_file)
 
-	mainLineCheck = ((yearPos == 4) and
-	((monthPos > 6) and (monthPos < 9)) and 
-	((dayPos>9) and (dayPos<13)) and
-	((meridemPos > 11) and (meridemPos < 15)) and
-	((timeDividerPos > 15) and (timeDividerPos < 20)))
 
-	return mainLineCheck
+def line_type_checker(line, chat_room):
+    if main_line_checker(line):
+        divider_pos = line.find(', ')
 
-def inviteLineChecker(inviteLine, inviteChatRoom, inviteDate):
-	#ex)이재욱님이 012님, 조민정님, 윤승희님, 이우진님과 이창율님을 초대했습니다.
-	inviteMemberData = inviteLine
-	inviteMemberData = inviteMemberData.split('님')
-	inviteMemberData.pop()
-	
-	preMemberList = inviteChatRoom.memberList
+        date_line = date_checker(line[:divider_pos])
 
-	for dataIndex in range(len(inviteMemberData)):
-		if(dataIndex != 0):
-			spacePos = inviteMemberData[dataIndex].find(' ')
-			inviteMemberData[dataIndex] = (inviteMemberData[dataIndex])[spacePos+1:]
-		
-		if not(dataIndex == 0 and preMemberList):
-			if not chatterSearcher(preMemberList, inviteMemberData[dataIndex]):
-				chatterInfo = chatMember(inviteMemberData[dataIndex], inviteDate)
-				inviteChatRoom.appendMember(chatterInfo)
+        content_line = line[divider_pos + 2:]
 
-def chatterSearcher(memberList, targetMemberName):
-	for searchMember in memberList:
-		if searchMember.name == targetMemberName:
-			return searchMember
+        if ' : ' in content_line:
+            line_type = 'chat'
+            chat_line_checker(content_line, chat_room)
 
-	return False
+        elif '초대했습니다.' in content_line:
+            line_type = 'invite'
+            invite_line_checker(content_line, chat_room, date_line)
 
-def linkLineChecker(linkLine, linkUploader):
-	linkPos = linkPosFinder(linkLine)
-	
-	if linkPos > -1 :
-		linkUploader.infoCounter(memberInfo.link)
-		linkSlicedLine = linkLine[linkPos:]
-		
-		spacePos = linkSlicedLine.find(' ')
+        else:
+            line_type = 'date'
 
-		if(spacePos == -1):
-			fixedLine = linkLine[:linkPos]
-		else:
-			fixedLine = linkLine[:linkPos]+linkLine[spacePos+linkPos:]
-		
-		link = linkSlicedLine[:spacePos]
+    elif line != '\n':
+        line_type = 'extra'
+        talk_line_checker(line, chat_room.preChatMember)
 
-		return linkLineChecker(fixedLine, linkUploader)
-	
-	else:
-		return linkLine
+    else:
+        line_type = 'blank'
 
-def linkPosFinder(linkLine):
-	httpPos = linkLine.find('http://')
-	httpsPos = linkLine.find('https://')
-	linkPos = -1
-	
-	if(httpPos > -1):
-		linkPos = httpPos
-	elif(httpsPos > -1):
-		linkPos = httpsPos
 
-	return linkPos
+def main_line_checker(line):
+    year_pos = line.find('년')
+    month_pos = line.find('월')
+    day_pos = line.find('일')
+    meridem_pos = line.find('오')
+    time_divider_pos = line.find(':')
 
-def talkLineChecker(talkLine, talker):
-	talkLine = linkLineChecker(talkLine, talker)
-	
-	talkLength = len(talkLine)-1
-	talker.talkAdder(talkLength)
+    main_line_check = ((year_pos == 4) and
+                       ((month_pos > 6) and (month_pos < 9)) and
+                       ((day_pos > 9) and (day_pos < 13)) and
+                       ((meridem_pos > 11) and (meridem_pos < 15)) and
+                       ((time_divider_pos > 15) and (time_divider_pos < 20)))
 
-def headLineChecker(headLine, talker):
-	if(headLine.find('(이모티콘)') == 0):
-		talker.infoCounter(memberInfo.emoticon)
-		headLine = headLine[6:]
-	
-	elif(headLine.find('(emoticon)') == 0):
-		talker.infoCounter(memberInfo.emoticon)
-		headLine = headLine[10:]
+    return main_line_check
 
-	elif (headLine.find('[사진]') == 0):
-		talker.infoCounter(memberInfo.image)
-		headLine = headLine[4:]
 
-	return headLine
+def invite_line_checker(invite_line, invite_chat_room, invite_date):
+    # ex)이재욱님이 012님, 조민정님, 윤승희님, 이우진님과 이창율님을 초대했습니다.
 
-def fileUploadChecker(fileUploadLine):
-	
-	fileExist = False	
-	revDotPos = fileUploadLine.rfind('.')
-	
-	if revDotPos > -1:
-		fileLength = len(fileUploadLine)
-		
-		if fileLength > 6 and ((revDotPos == fileLength - 4) or (revDotPos == fileLength - 5) or (revDotPos == fileLength - 6)):
+    invite_line = invite_line.split('님')
+    invite_line.pop()
 
-			supportFileList = ['mp3', 'wav', 'flac', 'tta', 'tak', 'aac', 'wma', 'ogg', 'm4a','doc', 'docx', 'hwp', 'txt', 'rtf', 'xml', 'pdf', 'wks', 'wps', 'xps', 'md', 'odf', 'odt', 'ods', 'odp', 'csv', 'tsv', 'xls', 'xlsx', 'ppt', 'pptx', 'pages', 'key', 'numbers', 'show', 'ce', 'zip', 'gz', 'bz2', 'rar', '7z', 'lzh', 'alz']
-	
-			fileExtension = fileUploadLine[revDotPos+1:-1]
-						
-			if fileExtension in supportFileList:
-				fileExist = True
+    member_list = invite_chat_room.memberList
 
-	return fileExist
+    for dataIndex in range(len(invite_line)):
+        if dataIndex != 0:
+            space_pos = invite_line[dataIndex].find(' ')
+            invite_line[dataIndex] = (invite_line[dataIndex])[space_pos + 1:]
 
-def chatLineChecker(chatLine, chatRoom):
+        if not (dataIndex == 0 and member_list):
+            if not chat_member_searcher(member_list, invite_line[dataIndex]):
+                chat_member = ChatMember(invite_line[dataIndex], invite_date)
+                invite_chat_room.append_member(chat_member)
 
-	chattingDividerPos = chatLine.find(' : ')
-	
-	chatterName = chatLine[:chattingDividerPos]
 
-	chatting = chatLine[chattingDividerPos+3:]
+def chat_member_searcher(member_list, search_member_name):
+    for searchMember in member_list:
+        if searchMember.name == search_member_name:
+            return searchMember
 
-	chatterInstance = chatterSearcher(chatRoom.memberList, chatterName)
-	if not chatterInstance :
-		chatterInstance = chatMember(chatterName)
-		chatRoom.appendMember(chatterInstance)
+    return False
 
-	chatRoom.setPreChatMember(chatterInstance)
 
-	chatterInstance.infoCounter(memberInfo.chat)
+def link_line_checker(link_line, link_uploader):
+    link_pos = link_pos_finder(link_line)
 
-	if(chatting == '<사진>\n'):
-		chatterInstance.infoCounter(memberInfo.image)
-	
-	elif(chatting == '<동영상>\n'):
-		chatterInstance.infoCounter(memberInfo.video)
-	
-	elif(chatting.find('#') == 0):
-		chatterInstance.infoCounter(memberInfo.hashtag)
-	
-	elif(chatting.find('<연락처') == 0):
-		chatterInstance.infoCounter(memberInfo.address)
-	
-	elif(chatting == ('<음성메시지>\n')):
-		chatterInstance.infoCounter(memberInfo.voice)
-	
-	elif(fileUploadChecker(chatting)):
-		chatterInstance.infoCounter(memberInfo.file)
-		
-	else:
-		chatting = headLineChecker(chatting, chatterInstance)
-		
-		if(chatting != '\n'):
-			chatterInstance.infoCounter(memberInfo.talk)
-			talkLineChecker(chatting, chatterInstance)
+    if link_pos > -1:
+        link_uploader.info_counter(MemberInfo.link)
+        link_sliced_line = link_line[link_pos:]
+
+        space_pos = link_sliced_line.find(' ')
+
+        if space_pos == -1:
+            fixed_line = link_line[:link_pos]
+        else:
+            fixed_line = link_line[:link_pos] + link_line[space_pos + link_pos:]
+
+        link = link_sliced_line[:space_pos]
+
+        return link_line_checker(fixed_line, link_uploader)
+
+    else:
+        return link_line
+
+
+def link_pos_finder(link_line):
+    link_pos = -1
+
+    if 'http://' in link_line:
+        link_pos = link_line.find('http://')
+    elif 'https://' in link_line:
+        link_pos = link_line.find('https://')
+
+    return link_pos
+
+
+def talk_line_checker(talk_line, talker):
+    talk_line = link_line_checker(talk_line, talker)
+
+    talk_length = len(talk_line) - 1
+    talker.talk_counter(talk_length)
+
+
+def head_element_checker(chat_line, talker):
+    if chat_line.find('(이모티콘)') == 0:
+        talker.info_counter(MemberInfo.emoticon)
+        chat_line = chat_line[6:]
+
+    elif chat_line.find('(emoticon)') == 0:
+        talker.info_counter(MemberInfo.emoticon)
+        chat_line = chat_line[10:]
+
+    elif chat_line.find('[사진]') == 0:
+        talker.info_counter(MemberInfo.image)
+        chat_line = chat_line[4:]
+
+    return chat_line
+
+
+def file_checker(file_upload_line):
+    file_exist = False
+    extension_dot_pos = file_upload_line.rfind('.')
+
+    if extension_dot_pos > -1:
+        line_length = len(file_upload_line)
+
+        if line_length > 6 and ((extension_dot_pos == line_length - 4) or (extension_dot_pos == line_length - 5) or (
+                extension_dot_pos == line_length - 6)):
+
+            support_file_list = ['mp3', 'wav', 'flac', 'tta', 'tak', 'aac', 'wma', 'ogg', 'm4a', 'doc', 'docx', 'hwp',
+                                 'txt', 'rtf', 'xml', 'pdf', 'wks', 'wps', 'xps', 'md', 'odf', 'odt', 'ods', 'odp',
+                                 'csv', 'tsv', 'xls', 'xlsx', 'ppt', 'pptx', 'pages', 'key', 'numbers', 'show', 'ce',
+                                 'zip', 'gz', 'bz2', 'rar', '7z', 'lzh', 'alz']
+
+            file_extension = file_upload_line[extension_dot_pos + 1:-1]
+
+            if file_extension in support_file_list:
+                file_exist = True
+
+    return file_exist
+
+
+def chat_line_checker(chat_line, chat_room):
+    content_divider_pos = chat_line.find(' : ')
+
+    chatter_name = chat_line[:content_divider_pos]
+
+    chatting = chat_line[content_divider_pos + 3:]
+
+    chatter = chat_member_searcher(chat_room.memberList, chatter_name)
+    if not chatter:
+        chatter = ChatMember(chatter_name)
+        chat_room.append_member(chatter)
+
+    chat_room.set_chatted_member(chatter)
+
+    chatter.info_counter(MemberInfo.chat)
+
+    if chatting == '<사진>\n':
+        chatter.info_counter(MemberInfo.image)
+
+    elif chatting == '<동영상>\n':
+        chatter.info_counter(MemberInfo.video)
+
+    elif chatting.find('#') == 0:
+        chatter.info_counter(MemberInfo.hashtag)
+
+    elif chatting.find('<연락처') == 0:
+        chatter.info_counter(MemberInfo.address)
+
+    elif chatting == '<음성메시지>\n':
+        chatter.info_counter(MemberInfo.voice)
+
+    elif file_checker(chatting):
+        chatter.info_counter(MemberInfo.file)
+
+    else:
+        chatting = head_element_checker(chatting, chatter)
+
+        if chatting != '\n':
+            chatter.info_counter(MemberInfo.talk)
+            talk_line_checker(chatting, chatter)

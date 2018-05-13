@@ -1,21 +1,29 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from katalkative_func_Py3 import *
 
-encodeType = 'utf-8'
-logFileName = "../../Katalkative_texts/KakaoTalkChats_bigfile.txt"
-logFile = chatFileOpener(logFileName, encodeType)
+# Open the Kakaotalk log file with 'log_file_opener' function.
+logFile = log_file_opener()
 
-logFilePresentLine = next(logFile)
-chatRoomInstance = chatRoomInfoChecker(logFilePresentLine)
-
+# Load first line of log file with next().
 logFilePresentLine = next(logFile)
 
-chatRoomInstance.setLogSaveDate(chatDateChecker(logFilePresentLine[9:]))
+# Set information of chatting room on 'ChatRoom' class, parsing first line.
+chatRoomInstance = chat_room_info_checker(logFilePresentLine)
 
-blankLinePasser(logFile, 2)
+logFilePresentLine = next(logFile)
 
+# Slice the useless part of second line and parsing the date part with 'date_checker' function, then set on instance.
+chatRoomInstance.set_log_saved_date(date_checker(logFilePresentLine[9:]))
+
+# Pass the blank lines.
+blank_line_passer(logFile, 2)
+
+# Parse every single chatting line using 'line_type_checker' function.
 for logFilePresentLine in logFile:
-	lineTypeChecker(logFilePresentLine, chatRoomInstance)
+    line_type_checker(logFilePresentLine, chatRoomInstance)
 
-printChatInfo(chatRoomInstance)
+# Print information of chatting members.
+print_chat_info(chatRoomInstance)
+
+# Close the log file.
 logFile.close()
