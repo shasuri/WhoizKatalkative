@@ -6,3 +6,10 @@ katalkative_func.pyc
 katalkative_func.pyc
 __pycache__/katalkative_func.cpython-36.pyc
 >>>>>>> pyDir
+*.pyc
+Py2ver/.idea/*
+Py3ver/.idea/*
+Py3ver/venv/*
+Py3ver/Py3_docs/*
+Py3ver/Py3_backup/*
+*.txt
