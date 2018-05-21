@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-from katalkative_func_Py3 import *
+from log_file_opener import log_file_opener
+from chat_room_info_checker import chat_room_info_checker
+from blank_line_passer import blank_line_passer
+from line_type_checker import line_type_checker
+from print_chat_info import print_chat_info
+from date_checker import date_checker
+
 
 logFile = log_file_opener()
 """file : Open the Kakaotalk log file with 'log_file_opener' function.

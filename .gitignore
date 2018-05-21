@@ -11,3 +11,5 @@ Py2ver/.idea/*
 Py3ver/.idea/*
 Py3ver/venv/*
 Py3ver/Py3_docs/*
+Py3ver/Py3_backup/*
+*.txt
