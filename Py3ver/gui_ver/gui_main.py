@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
-from log_file_opener import log_file_opener
+from sys import path
+path.insert(0, "../console_ver")
+from katalkative_main_Py3 import *
+from log_file_opener import gui_log_opener
 from chat_room_info_checker import chat_room_info_checker
 from blank_line_passer import blank_line_passer
 from line_type_checker import line_type_checker
 from print_chat_info import print_chat_info
 from date_checker import date_checker
 
-if __name__ == "__main__":
-	logFile = log_file_opener()
-	"""file : Open the Kakaotalk log file with 'log_file_opener' function.
-	"""
+def result_loader(file_path, encoding_type):
+	logFile = gui_log_opener(file_path, encoding_type)
 
 	logFilePresentLine = next(logFile)
 	"""str : Load first line of log file with next().
@@ -34,10 +34,8 @@ if __name__ == "__main__":
 	"""Parse every single chatting line using 'line_type_checker' function.
 	"""
 
-	print_chat_info(chatRoomInstance)
-	"""Print information of chatting members.
-	"""
-
 	logFile.close()
 	"""Print information of chatting members.
 	"""
+
+	return chatRoomInstance

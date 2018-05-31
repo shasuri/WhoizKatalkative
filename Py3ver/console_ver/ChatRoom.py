@@ -9,9 +9,10 @@ class ChatRoom:
         logSaveDate (datetime.datetime): datetime.datetime instance which is chatting log saved time.
     """
 
-    def __init__(self, title, member_number):
+    def __init__(self, title, member_number, group_type='specified'):
         self.title = title
         self.memberNum = member_number
+        self.groupType = group_type
         self.memberList = []
         self.preChatMember = ''
         self.logSaveDate = ''

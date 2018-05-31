@@ -6,12 +6,13 @@ class MemberInfo(Enum):
     """
     chat = 0
     talk = 1
-    emoticon = 2
-    image = 3
-    link = 4
-    video = 5
-    hashtag = 6
-    file = 7
-    address = 8
-    voice = 9
-    talkSize = 10
+    talkSize = 2
+    emoticon = 3
+    image = 4
+    link = 5
+    video = 6
+    hashtag = 7
+    file = 8
+    address = 9
+    voice = 10
+    

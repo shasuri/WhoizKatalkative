@@ -6,6 +6,7 @@ def log_file_opener():
         log_file (file): Opened file.
 
     """
+
     print("Input name of log file : ", end="")
     log_file_name = input()
 
@@ -20,3 +21,8 @@ def log_file_opener():
 
     log_file = open(log_file_name, 'r', encoding=log_file_encoding)
     return log_file
+
+def gui_log_opener(path, encoding_type):
+    log_file = open(path, 'r', encoding=encoding_type)
+    return log_file
+    
