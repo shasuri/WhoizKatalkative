@@ -1,6 +1,7 @@
 from sys import path
 path.insert(0, "../console_ver")
 from set_user_name import gui_set_user
+from MemberInfo import MemberInfo
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
@@ -13,7 +14,7 @@ class App(Tk):
 		Tk.__init__(self)
 
 		self.title("Katalkative GUI Beta")
-		self.geometry("600x300+100+100")
+		self.geometry("600x300+50+125")
 		self.resizable(False,False)
 
 		self.container = Frame(self)
@@ -70,7 +71,7 @@ class IntroPage(Frame):
 		bottom_frame = Frame(self)#,bd=2,bg="blue")
 		bottom_frame.pack(fill=X,side=BOTTOM,pady=10)
 
-		next_button = Button(bottom_frame,text="Next",width=10,command=self.file_exist)#lambda:controller.next_page.tkraise())
+		next_button = Button(bottom_frame,text="Next",width=10,command=self.file_exist)
 		next_button.pack(side=RIGHT,padx=30)
 
 	#-------------------------------------
@@ -93,7 +94,13 @@ class IntroPage(Frame):
 				messagebox.showinfo("Error!","Error : "+str(unicode_error)+".\nTry with 'UTF-8' encoding.")
 
 			except ValueError as value_error:
-				messagebox.showinfo("Error!","Error : "+str(value_error)+".\nTry with 'UTF-8' encoding.")
+				if self.encoding_select.get() == "UTF-8":
+					messagebox.showinfo("Error!","Error : "+str(value_error)+".\nCheck the log is right to form.")
+				else:
+					messagebox.showinfo("Error!","Error : "+str(value_error)+".\nCheck the log is right to form, or try with 'UTF-8' encoding.")
+
+			except IndexError as index_error:
+				messagebox.showinfo("Error!","Error : "+str(index_error)+".\nCheck the log is right to form.")
 
 		else:
 			messagebox.showinfo("File check","Wrong path...")
@@ -106,7 +113,7 @@ class IntroPage(Frame):
 
 		self.chat_room = result_loader(file_path, encoding_type)
 
-		if self.chat_room.groupType == 'personal':
+		if self.chat_room.roomType == 'personal':
 			self.next_page = ResultPage(self.controller.container, self.controller, self.chat_room)
 		else:
 			self.next_page = UserSelectPage(self.controller.container, self.controller, self.chat_room)
@@ -145,7 +152,10 @@ class UserSelectPage(Frame):
 		result_button.pack()
 
 	def result_step(self):
-		gui_set_user(self.chat_room,self.user_name_select.get())
+		try:
+			gui_set_user(self.chat_room,self.user_name_select.get())
+		except:
+			pass
 		self.result = ResultPage(self.controller.container,self.controller,self.chat_room)
 		self.result.grid(row=0,column=0,sticky="nsew")
 		self.result.tkraise()
@@ -155,13 +165,47 @@ class ResultPage(Frame):
 	def __init__(self,super_frame,controller,chat_room):
 		Frame.__init__(self,super_frame)
 		self.chat_room = chat_room
+		self.controller = controller
+		self.controller.geometry("600x375+100+100")
+		self.controller.resizable(True,True)
+		
+		#------------------------------------------
+		title_frame = Frame(self)
+		title_frame.pack(fill=BOTH,padx=10,pady=10)
+		
+		if self.chat_room.roomType == 'personal':
+			title_label = Label(title_frame,text="You are chatting with : "+self.chat_room.title)
+		else:
+			title_label = Label(title_frame,text="Chatting room title : "+self.chat_room.title)
+		
+		title_label.pack(side=LEFT)
+		
+		#------------------------------------------
+		date_frame = Frame(self)
+		date_frame.pack(fill=BOTH,padx=10)
 
-		controller.geometry("1200x500+100+100")
-		controller.resizable(True,True)
+		save_date_label = Label(date_frame,text="Log is saved at "+str(self.chat_room.logSaveDate))
+		save_date_label.pack(side=LEFT)
 
-		info_types = ('Invited date','Talk','Plain texts','Chat length','Emoticons','Images','Internet links','Videos','Hashtags','Etc files','Addresses','Voice records')
+		#-------------------------------------------
+		bottom_frame = Frame(self)
+		bottom_frame.pack(fill=BOTH,padx=10,pady=10)
 
-		self.result_table = ttk.Treeview(self,columns=info_types,selectmode="extended")
+		#-------------------------------------------
+		info_frame = Frame(bottom_frame)
+		info_frame.pack(fill=BOTH)
+
+
+		info_types = ('Invited date','Talk average','Talk','Plain texts','Chat length','Emoticons','Images','Internet links','Videos','Hashtags','Etc. files','Addresses','Voice records')
+
+		self.result_table = ttk.Treeview(info_frame,columns=info_types,selectmode="extended")
+		
+		table_yscroll = ttk.Scrollbar(info_frame,orient="vertical",command=(self.result_table).yview)
+		table_yscroll.pack(side=RIGHT,fill=Y)
+		table_xscroll = ttk.Scrollbar(info_frame,orient="horizontal",command=(self.result_table).xview)
+		table_xscroll.pack(side=BOTTOM,fill=X)
+		
+		self.result_table.configure(yscrollcommand=table_yscroll.set,xscrollcommand=table_xscroll.set)
 
 		self.result_table.column('#0',stretch=YES,minwidth=10,width=100)
 		self.result_table.heading('#0',text='User name')
@@ -169,16 +213,38 @@ class ResultPage(Frame):
 		for type_set_index in range(len(info_types)):
 			self.result_table.column('#'+str(type_set_index+1),stretch=YES,minwidth=20,width=80)
 			self.result_table.heading('#'+str(type_set_index+1),text=info_types[type_set_index],anchor=W)
+		
 		self.result_table.column('#1',stretch=YES,minwidth=20,width=130)
 
+		# Consist table contents.
 		for insert_index in range(len(self.chat_room.memberList)):
 			info_values = (self.chat_room.memberList[insert_index].invitedDate,)
 
+			if self.chat_room.memberList[insert_index].infoList[MemberInfo.talk.value] != 0 :
+				talk_average = float(self.chat_room.memberList[insert_index].infoList[MemberInfo.talkSize.value]) / self.chat_room.memberList[insert_index].infoList[MemberInfo.talk.value]
+				talk_average = round(talk_average,2)
+			else :
+				talk_average = 0.00
+
+			info_values += (talk_average,)
+			
 			for value_index in range(len(self.chat_room.memberList[insert_index].infoList)):
 				info_values += (self.chat_room.memberList[insert_index].infoList[value_index],)
 			
 			self.result_table.insert('','end',text=self.chat_room.memberList[insert_index].name,values=info_values)
-	
-		self.result_table.pack()
-myApp = App()
-myApp.mainloop()
+
+		self.result_table.pack(side=TOP)
+
+		#-----------------------------------------
+		exit_frame = Frame(bottom_frame)
+		exit_frame.pack(fill=BOTH,side=BOTTOM)
+		
+		exit_button = Button(exit_frame,text="Exit",width=10,command=self.close_page)
+		exit_button.pack(side=RIGHT)
+
+	def close_page(self):
+		self.controller.destroy()
+
+
+Katalkative_beta = App()
+Katalkative_beta.mainloop()

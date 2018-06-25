@@ -20,10 +20,10 @@ def file_checker(file_upload_line):
         if line_length > 6 and ((extension_dot_pos == line_length - 4) or (extension_dot_pos == line_length - 5) or (
                 extension_dot_pos == line_length - 6)):  # Check position of the extension dot is on right position.
 
-            support_file_list = ['mp3', 'wav', 'flac', 'tta', 'tak', 'aac', 'wma', 'ogg', 'm4a', 'doc', 'docx', 'hwp',
+            support_file_list = ('mp3', 'wav', 'flac', 'tta', 'tak', 'aac', 'wma', 'ogg', 'm4a', 'doc', 'docx', 'hwp',
                                  'txt', 'rtf', 'xml', 'pdf', 'wks', 'wps', 'xps', 'md', 'odf', 'odt', 'ods', 'odp',
                                  'csv', 'tsv', 'xls', 'xlsx', 'ppt', 'pptx', 'pages', 'key', 'numbers', 'show', 'ce',
-                                 'zip', 'gz', 'bz2', 'rar', '7z', 'lzh', 'alz']  # File extensions which are supported by Kakaotalk.
+                                 'zip', 'gz', 'bz2', 'rar', '7z', 'lzh', 'alz')  # File extensions which are supported by Kakaotalk.
 
             file_extension = file_upload_line[extension_dot_pos + 1:-1]
 

@@ -26,11 +26,11 @@ def set_user_name(chat_room):
         member_list.remove(user_exist)
 
 def gui_set_user(chat_room,user_name):
-    member_list = chat_room.memberList
+    #member_list = chat_room.memberList
 
-    user_exist = chat_member_searcher(member_list, user_name)
+    user_exist = chat_member_searcher(chat_room.memberList, user_name)
 
-    user_info = chat_member_searcher(member_list, '회원님')
+    user_info = chat_member_searcher(chat_room.memberList, '회원님')
 
     if not user_exist:
         pass
@@ -38,5 +38,5 @@ def gui_set_user(chat_room,user_name):
         user_info.name = user_exist.name
         user_info.invitedDate = user_exist.invitedDate
 
-        member_list.remove(user_exist)
+        chat_room.memberList.remove(user_exist)
 
