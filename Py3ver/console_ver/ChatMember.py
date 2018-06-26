@@ -13,7 +13,6 @@ class ChatMember:
     def __init__(self, name, invite_date=''):
         self.name = name
         self.invitedDate = invite_date
-
         self.infoList = [0 for infoIndex in range(11)]
 
     def info_counter(self, info):

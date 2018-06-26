@@ -36,8 +36,8 @@ class IntroPage(Frame):
 		descript_frame = Frame(self)#,bd=2,bg="red") 
 		descript_frame.pack(fill=X,padx=10,pady=10)
 
-		intro = Label(descript_frame,text="Katalkative GUI Beta. Select your kakaotalk log file from mobile device.")
-		intro.pack(side=LEFT,fill=X)
+		intro_label = Label(descript_frame,text="Katalkative GUI Beta. Select your kakaotalk log file from mobile device.")
+		intro_label.pack(side=LEFT,fill=X)
 
 	#-------------------------------------
 		input_frame = Frame(self)#,bd=2,bg="green")
@@ -128,7 +128,7 @@ class UserSelectPage(Frame):
 		self.chat_room = chat_room
 		
 		select_frame = Frame(self)
-		select_frame.pack(fill=BOTH,padx=10,pady=20)
+		select_frame.pack(fill=BOTH,padx=10,pady=20,side=TOP)
 
 		select_label = Label(select_frame,text="Select your name in the box.")
 		select_label.pack(side=LEFT,padx=10)
@@ -148,8 +148,12 @@ class UserSelectPage(Frame):
 		self.user_name_select.current(0)
 		self.user_name_select.pack(side=LEFT,padx=10)
 
-		result_button = Button(self,text="Next",width=10,command=self.result_step)
-		result_button.pack()
+		#--------------------------------------------------
+		button_frame = Frame(self)
+		button_frame.pack(fill=BOTH,side=BOTTOM,pady=10)
+
+		result_button = Button(button_frame,text="Next",width=10,command=self.result_step)
+		result_button.pack(side=RIGHT,padx=30)
 
 	def result_step(self):
 		try:
@@ -160,6 +164,7 @@ class UserSelectPage(Frame):
 		self.result.grid(row=0,column=0,sticky="nsew")
 		self.result.tkraise()
 
+
 class ResultPage(Frame):
 
 	def __init__(self,super_frame,controller,chat_room):
@@ -167,7 +172,7 @@ class ResultPage(Frame):
 		self.chat_room = chat_room
 		self.controller = controller
 		self.controller.geometry("600x375+100+100")
-		self.controller.resizable(True,True)
+		self.controller.resizable(True,False)
 		
 		#------------------------------------------
 		title_frame = Frame(self)
@@ -177,7 +182,6 @@ class ResultPage(Frame):
 			title_label = Label(title_frame,text="You are chatting with : "+self.chat_room.title)
 		else:
 			title_label = Label(title_frame,text="Chatting room title : "+self.chat_room.title)
-		
 		title_label.pack(side=LEFT)
 		
 		#------------------------------------------
@@ -190,6 +194,9 @@ class ResultPage(Frame):
 		#-------------------------------------------
 		bottom_frame = Frame(self)
 		bottom_frame.pack(fill=BOTH,padx=10,pady=10)
+
+		question_label = Label(bottom_frame,text="So, WhoizKatalkative?")
+		question_label.pack(side=TOP)
 
 		#-------------------------------------------
 		info_frame = Frame(bottom_frame)
@@ -220,6 +227,7 @@ class ResultPage(Frame):
 		for insert_index in range(len(self.chat_room.memberList)):
 			info_values = (self.chat_room.memberList[insert_index].invitedDate,)
 
+			#Calc average.
 			if self.chat_room.memberList[insert_index].infoList[MemberInfo.talk.value] != 0 :
 				talk_average = float(self.chat_room.memberList[insert_index].infoList[MemberInfo.talkSize.value]) / self.chat_room.memberList[insert_index].infoList[MemberInfo.talk.value]
 				talk_average = round(talk_average,2)
@@ -233,13 +241,22 @@ class ResultPage(Frame):
 			
 			self.result_table.insert('','end',text=self.chat_room.memberList[insert_index].name,values=info_values)
 
-		self.result_table.pack(side=TOP)
+		self.result_table.pack(side=TOP,expand=True,fill='y')
 
 		#-----------------------------------------
-		exit_frame = Frame(bottom_frame)
-		exit_frame.pack(fill=BOTH,side=BOTTOM)
+		end_frame = Frame(bottom_frame)
+		end_frame.pack(fill=BOTH,side=BOTTOM)
+
+		maxVal = 0
+		for maxIndex in self.chat_room.memberList:
+			if maxVal < maxIndex.infoList[MemberInfo.talkSize.value]:
+				maxVal = maxIndex.infoList[MemberInfo.talkSize.value]
+				maxWho = maxIndex.name
+
+		who_label = Label(end_frame,text=maxWho+" is the most Katalkative!")
+		who_label.pack(side=LEFT)
 		
-		exit_button = Button(exit_frame,text="Exit",width=10,command=self.close_page)
+		exit_button = Button(end_frame,text="Exit",width=10,command=self.close_page)
 		exit_button.pack(side=RIGHT)
 
 	def close_page(self):
