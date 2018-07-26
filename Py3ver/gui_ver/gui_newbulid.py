@@ -5,8 +5,9 @@ from MemberInfo import MemberInfo
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
-from tkinter import ttk
+from tkinter.ttk import *
 from os.path import isfile
+from openpyxl import Workbook
 from gui_main import result_loader
 
 class App(Tk):
@@ -59,7 +60,7 @@ class IntroPage(Frame):
 		encoding_label = Label(encoding_select_frame,text="File encoding : ")
 		encoding_label.pack(side=LEFT)
 
-		self.encoding_select = ttk.Combobox(encoding_select_frame, state="readonly")
+		self.encoding_select = Combobox(encoding_select_frame, state="readonly")
 		self.encoding_select['values'] = ('UTF-8','CP949','euc-kr','ANSI','unicode_escape','ASCII')
 		self.encoding_select.current(0)
 		self.encoding_select.pack(side=LEFT,padx=10)
@@ -76,7 +77,7 @@ class IntroPage(Frame):
 
 	#-------------------------------------
 	def file_selector(self):
-		file_path = filedialog.askopenfilename(title="Select file",filetypes=(("Text files", "*.txt"),("all files", "*.*")))
+		file_path = filedialog.askopenfilename(initialdir = "./",title="Select log file",filetypes=(("Text files", "*.txt"),("All files", "*.*")))
 		self.path_input.delete(0,END)
 		self.path_input.insert(0,file_path)
 
@@ -143,7 +144,7 @@ class UserSelectPage(Frame):
 			else:
 				pass
 
-		self.user_name_select = ttk.Combobox(select_frame, state="readonly")
+		self.user_name_select = Combobox(select_frame, state="readonly")
 		self.user_name_select['values'] = name_select_list
 		self.user_name_select.current(0)
 		self.user_name_select.pack(side=LEFT,padx=10)
@@ -200,26 +201,28 @@ class ResultPage(Frame):
 
 		#-------------------------------------------
 		info_frame = Frame(bottom_frame)
-		info_frame.pack(fill=BOTH)
+		info_frame.pack(expand=YES,fill=BOTH)
 
+		self.info_value_table = []
+		self.info_types = ('Invited date','Talk average','Talk','Plain texts','Chat length','Emoticons','Images','Internet links','Videos','Hashtags','Etc. files','Addresses','Voice records')
 
-		info_types = ('Invited date','Talk average','Talk','Plain texts','Chat length','Emoticons','Images','Internet links','Videos','Hashtags','Etc. files','Addresses','Voice records')
-
-		self.result_table = ttk.Treeview(info_frame,columns=info_types,selectmode="extended")
+		self.result_table = Treeview(info_frame,columns=self.info_types,selectmode="extended")
 		
-		table_yscroll = ttk.Scrollbar(info_frame,orient="vertical",command=(self.result_table).yview)
+		table_yscroll = Scrollbar(info_frame,orient="vertical",command=(self.result_table).yview)
 		table_yscroll.pack(side=RIGHT,fill=Y)
-		table_xscroll = ttk.Scrollbar(info_frame,orient="horizontal",command=(self.result_table).xview)
+		table_xscroll = Scrollbar(info_frame,orient="horizontal",command=(self.result_table).xview)
 		table_xscroll.pack(side=BOTTOM,fill=X)
 		
 		self.result_table.configure(yscrollcommand=table_yscroll.set,xscrollcommand=table_xscroll.set)
 
+		self.result_table.pack(expand=YES,fill=BOTH)
+
 		self.result_table.column('#0',stretch=YES,minwidth=10,width=100)
 		self.result_table.heading('#0',text='User name')
 		
-		for type_set_index in range(len(info_types)):
+		for type_set_index in range(len(self.info_types)):
 			self.result_table.column('#'+str(type_set_index+1),stretch=YES,minwidth=20,width=80)
-			self.result_table.heading('#'+str(type_set_index+1),text=info_types[type_set_index],anchor=W)
+			self.result_table.heading('#'+str(type_set_index+1),text=self.info_types[type_set_index],anchor=W)
 		
 		self.result_table.column('#1',stretch=YES,minwidth=20,width=130)
 
@@ -239,11 +242,14 @@ class ResultPage(Frame):
 			for value_index in range(len(self.chat_room.memberList[insert_index].infoList)):
 				info_values += (self.chat_room.memberList[insert_index].infoList[value_index],)
 			
-			self.result_table.insert('','end',text=self.chat_room.memberList[insert_index].name,values=info_values)
-
-		self.result_table.pack(side=TOP,expand=True,fill='y')
+			member_name = self.chat_room.memberList[insert_index].name
+			self.result_table.insert('','end',text=member_name,values=info_values)
+			
+			info_values = (member_name,) + info_values			
+			self.info_value_table.append(info_values)
 
 		#-----------------------------------------
+		
 		end_frame = Frame(bottom_frame)
 		end_frame.pack(fill=BOTH,side=BOTTOM)
 
@@ -255,13 +261,84 @@ class ResultPage(Frame):
 
 		who_label = Label(end_frame,text=maxWho+" is the most Katalkative!")
 		who_label.pack(side=LEFT)
-		
-		exit_button = Button(end_frame,text="Exit",width=10,command=self.close_page)
-		exit_button.pack(side=RIGHT)
 
+		exit_button = Button(end_frame,text="Exit",width=10,command=self.close_page)
+		exit_button.pack(side=RIGHT,padx=10)
+
+		extract_button = Button(end_frame,text="Extract",width=10,command=self.extract_select)
+		extract_button.pack(side=RIGHT)
+		
 	def close_page(self):
 		self.controller.destroy()
 
+	def extract_select(self):
+		self.extract_window = Toplevel(self.controller)
+		(self.extract_window).geometry("300x120+50+125")
+		(self.extract_window).resizable(False,False)
+		(self.extract_window).focus_force()
+		(self.extract_window).grab_set()
+
+		extract_label = Label(self.extract_window,text="Choose which file type to extract.")
+		extract_label.pack()
+
+		self.var_sheet = BooleanVar()
+		self.var_database = BooleanVar()
+
+		checkbox_frame = Frame(self.extract_window)
+		checkbox_frame.pack(fill=X,pady=10)
+
+		check_sheet = Checkbutton(checkbox_frame,text="Spread sheet(.xlsx)",variable=self.var_sheet,onvalue=True,offvalue=False)
+		check_sheet.pack(side=LEFT,padx=10)
+
+		check_database = Checkbutton(checkbox_frame,text="Database(.sql)",variable=self.var_database,onvalue=True,offvalue=False)
+		check_database.pack(side=LEFT,padx=10)
+
+		choose_frame = Frame(self.extract_window)
+		choose_frame.pack(side=BOTTOM,fill=X,pady=10)
+
+		extract_cancel_button = Button(choose_frame,text="Cancel",width=10,command=self.extract_cancel)
+		extract_cancel_button.pack(side=RIGHT,padx=10)
+
+		extract_ok_button = Button(choose_frame,text="OK",width=10,command=self.extract_file)
+		extract_ok_button.pack(side=RIGHT,padx=10)
+
+	def extract_file(self):
+		if not (self.var_sheet.get() or self.var_database.get()):
+			messagebox.showinfo("Select","Select which file to extract on checkbox")
+
+		else:
+			if self.var_sheet.get():
+				self.extract_sheet()
+			
+			if self.var_database.get():
+				messagebox.showinfo("Extract as Database file","Sorry, not yet...(2018.07.26)")
+			
+			self.extract_cancel()
+
+	def extract_cancel(self):
+		self.extract_window.destroy()
+
+	def extract_sheet(self):
+		sheet_extract = Workbook()
+		sheet_write = sheet_extract.active
+		
+		info_types_extract = ("User name",) + self.info_types
+
+		for info_index in range(len(info_types_extract)):
+			info_cell = sheet_write.cell(row=1,column=info_index+1)
+			info_cell.value = info_types_extract[info_index]
+
+		for member_index in range(len(self.info_value_table)):
+			for info_value_index in range(len(self.info_value_table[member_index])):
+				info_value_cell = sheet_write.cell(row=member_index+2,column=info_value_index+1)
+				info_value_cell.value = self.info_value_table[member_index][info_value_index]
+
+		extract_path = filedialog.asksaveasfilename(initialdir = "./",title = "Save as Spread sheet file",filetypes = (("Spread sheet files","*.xlsx"),("All files","*.*")),confirmoverwrite=False,defaultextension=".xlsx")
+
+		if extract_path: #check if file path is null or not.
+			sheet_extract.save(extract_path)
+			
+		sheet_extract.close
 
 Katalkative_beta = App()
 Katalkative_beta.mainloop()

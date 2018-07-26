@@ -14,3 +14,6 @@ Py3ver/Py3_docs/*
 Py3ver/Py3_backup/*
 Py3ver/gui_ver/gui_test*
 *.txt
+*.xlsx
+Py3ver/gui_ver/sheet_test.py
+Py3ver/gui_ver/test_g.py
