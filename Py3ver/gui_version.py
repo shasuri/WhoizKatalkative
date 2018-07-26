@@ -1,14 +1,65 @@
-from sys import path
-path.insert(0, "../console_ver")
-from set_user_name import gui_set_user
-from MemberInfo import MemberInfo
+from log_parser import *
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.ttk import *
 from os.path import isfile
 from openpyxl import Workbook
-from gui_main import result_loader
+
+
+def gui_log_opener(path, encoding_type):
+    log_file = open(path, 'r', encoding=encoding_type)
+    return log_file
+
+
+def gui_set_user(chat_room,user_name):
+    #member_list = chat_room.memberList
+
+    user_exist = chat_member_searcher(chat_room.memberList, user_name)
+
+    user_info = chat_member_searcher(chat_room.memberList, '회원님')
+
+    if not user_exist:
+        pass
+    else:
+        user_info.name = user_exist.name
+        user_info.invitedDate = user_exist.invitedDate
+
+        chat_room.memberList.remove(user_exist)
+
+
+def result_loader(file_path, encoding_type):
+	logFile = gui_log_opener(file_path, encoding_type)
+
+	logFilePresentLine = next(logFile)
+	"""str : Load first line of log file with next().
+	"""
+
+	chatRoomInstance = chat_room_info_checker(logFilePresentLine)
+	"""ChatMember : Set information of chatting room on 'ChatRoom' class, parsing first line.
+	"""
+
+	logFilePresentLine = next(logFile)
+
+	chatRoomInstance.set_log_saved_date(date_checker(logFilePresentLine[9:]))
+	"""Slice the useless part of second line and parsing the date part with 'date_checker' function, then set on instance.
+	"""
+
+	blank_line_passer(logFile, 2)
+	"""Pass the blank lines.
+	"""
+
+	for logFilePresentLine in logFile:
+	    line_type_checker(logFilePresentLine, chatRoomInstance)
+	"""Parse every single chatting line using 'line_type_checker' function.
+	"""
+
+	logFile.close()
+	"""Print information of chatting members.
+	"""
+
+	return chatRoomInstance
+
 
 class App(Tk):
 	def __init__(self):
@@ -340,5 +391,7 @@ class ResultPage(Frame):
 			
 		sheet_extract.close
 
-Katalkative_beta = App()
-Katalkative_beta.mainloop()
+
+if __name__ == "__main__":
+	Katalkative_beta = App()
+	Katalkative_beta.mainloop()
