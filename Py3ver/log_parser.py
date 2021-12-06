@@ -106,23 +106,28 @@ def chat_room_info_checker(info_line):
     sliced_line = info_line[1:]  # Slice the crashed byte on first line.
     sliced_line = sliced_line.split()
 
-    if '님과' in sliced_line:
-        divider_pos = sliced_line.index('님과')
+    # if '님과' in sliced_line:
+    #     divider_pos = sliced_line.index('님과')
 
-        if divider_pos == 1:  # Personal chat room case.
-            chat_room_type = 'personal'
-            title = sliced_line[0]
-            member_number = 2
+    #     if divider_pos == 1:  # Personal chat room case.
+    #         chat_room_type = 'personal'
+    #         title = sliced_line[0]
+    #         member_number = 2
 
-        elif divider_pos == 2:  # Non specified group chat room name case.
-            chat_room_type = 'nspecifed'
-            title = " ".join(sliced_line[:-4])
-            member_number = int(sliced_line[-4])
+    #     elif divider_pos == 2:  # Non specified group chat room name case.
+    #         chat_room_type = 'nspecifed'
+    #         title = " ".join(sliced_line[:-4])
+    #         member_number = int(sliced_line[-4])
 
-    else:  # Specified group chat room name case.
-        chat_room_type = 'specifed'
-        title = " ".join(sliced_line[:-3])
-        member_number = int(sliced_line[-3])
+    # else:  # Specified group chat room name case.
+    #     chat_room_type = 'specifed'
+    #     title = " ".join(sliced_line[:-3])
+    #     member_number = int(sliced_line[-3])
+
+    divider_pos = sliced_line.index('님과')
+    title = "".join(sliced_line[:divider_pos])
+    member_number = 0
+    chat_room_type = None
 
     chat_room = ChatRoom(title, member_number, chat_room_type)
 
@@ -139,31 +144,36 @@ def date_checker(date_line):
         datetime.datetime: datetime.datetime instance.
 
     """
-    date_data = date_line.split()
+    date_data, time_data = date_line.split()
+    date_data = date_data.split('-')
 
-    year = int(date_data[0][:-1])
-    month = int(date_data[1][:-1])
-    day = int(date_data[2][:-1])
+    year = int(date_data[0])
+    month = int(date_data[1])
+    day = int(date_data[2])
 
-    if date_data[3] == '오전':
-        meridem = 'AM'
-    elif date_data[3] == '오후':
-        meridem = 'PM'
-    else:
-        meridem = 'Error'
+    # if date_data[3] == '오전':
+    #     meridem = 'AM'
+    # elif date_data[3] == '오후':
+    #     meridem = 'PM'
+    # else:
+    #     meridem = 'Error'
 
-    divider_pos = date_data[4].find(":")
+    # divider_pos = date_data[4].find(":")
+        
+    # hour = int(date_data[4][:divider_pos]) 
+    # if hour == 12:
+    #     if meridem == 'AM':
+    #         hour -= 12
+    #     elif meridem == 'PM':
+    #         pass
+    # elif meridem == 'PM':
+    #     hour += 12
 
-    hour = int(date_data[4][:divider_pos])
-    if hour == 12:
-        if meridem == 'AM':
-            hour -= 12
-        elif meridem == 'PM':
-            pass
-    elif meridem == 'PM':
-        hour += 12
+    # minute = int(date_data[4][divider_pos + 1:])
 
-    minute = int(date_data[4][divider_pos + 1:])
+    
+    hour = int(time_data[0])
+    minute = int(time_data[1])
 
     return datetime.datetime(year, month, day, hour, minute)
 
@@ -191,30 +201,45 @@ def line_type_checker(line, chat_room):
         `2018년 3월 23일 오후 11:16, Jack : Life is short, You need Python.`
 
     """
-    if main_line_checker(line):  # Check the line is a main line or an extra line.
-        divider_pos = line.find(', ')
+    # print("line : " + line)
+    # if main_line_checker(line):  # Check the line is a main line or an extra line.
+    #     divider_pos = line.find(', ')
 
-        date_line = date_checker(line[:divider_pos])
+    #     date_line = date_checker(line[:divider_pos])
 
-        content_line = line[divider_pos + 2:]
+    #     content_line = line[divider_pos + 2:]
 
-        if ' : ' in content_line:
-            line_type = 'chat'
-            chat_line_checker(content_line, chat_room)
+    #     if ' : ' in content_line:
+    #         line_type = 'chat'
+    #         chat_line_checker(content_line, chat_room)
 
-        elif '초대했습니다.' in content_line:
-            line_type = 'invite'
-            invite_line_checker(content_line, chat_room, date_line)
+    #     elif '초대하였습니다.' in content_line:
+    #         line_type = 'invite'
+    #         invite_line_checker(content_line, chat_room, date_line)
 
-        else:
-            line_type = 'date'
+    #     else:
+    #         line_type = 'date'
 
+    # elif line != '\n':
+    #     line_type = 'extra'
+    #     print(chat_room.preChatMember)
+    #     talk_line_checker(line, chat_room.preChatMember)
+
+    # else:
+    #     line_type = 'blank'
+
+    if line[0] == '[' :
+        # line_type = 'chat'
+        chat_line_checker(line[line.find(']',1):], chat_room)
+    if line[0] == '-' :
+        # line_type = 'date'
+        pass
+    if '초대하였습니다.' in line:
+        # line_type = 'invite'
+        invite_line_checker(line, chat_room, "2021-01-01")
     elif line != '\n':
-        line_type = 'extra'
+        # line_type = 'extra'
         talk_line_checker(line, chat_room.preChatMember)
-
-    else:
-        line_type = 'blank'
 
 
 def main_line_checker(line):
@@ -227,17 +252,19 @@ def main_line_checker(line):
         main_line_check (bool): True means the line is a main line, False means the line is an extra line.
 
     """
-    year_pos = line.find('년')
-    month_pos = line.find('월')
-    day_pos = line.find('일')
-    meridem_pos = line.find('오')
-    time_divider_pos = line.find(':')
+    # year_pos = line.find('년')
+    # month_pos = line.find('월')
+    # day_pos = line.find('일')
+    # meridem_pos = line.find('오')
+    # time_divider_pos = line.find(':')
 
-    main_line_check = ((year_pos == 4) and
-                       ((month_pos > 6) and (month_pos < 9)) and
-                       ((day_pos > 9) and (day_pos < 13)) and
-                       ((meridem_pos > 11) and (meridem_pos < 15)) and
-                       ((time_divider_pos > 15) and (time_divider_pos < 20)))  # Range of position of the normal date part string.
+    # main_line_check = ((year_pos == 4) and
+    #                    ((month_pos > 6) and (month_pos < 9)) and
+    #                    ((day_pos > 9) and (day_pos < 13)) and
+    #                    ((meridem_pos > 11) and (meridem_pos < 15)) and
+    #                    ((time_divider_pos > 15) and (time_divider_pos < 20)))  # Range of position of the normal date part string.
+
+    main_line_check = (line[0] == '[')
 
     return main_line_check
 
@@ -251,7 +278,7 @@ def invite_line_checker(invite_line, invite_chat_room, invite_date):
         invite_date (datetime.datetime): datetime.datetime instance of the inviting date.
     
     Examples:
-        `Jack님이 Mary님, Jill님과 Cindy님을 초대했습니다.`
+        `Jack님이 Mary님, Jill님과 Cindy님을 초대하였습니다.`
 
     """
 
@@ -487,19 +514,19 @@ def set_user_name(chat_room):
     Args:
         chat_room (ChatRoom): ChatRoom instance of the chatting room.
     """
-    print("What is your name? : ", end="")
-    user_name = input()
+    # print("What is your name? : ", end="")
+    # user_name = input()
 
-    member_list = chat_room.memberList
+    # member_list = chat_room.memberList
 
-    user_exist = chat_member_searcher(member_list, user_name)
+    # user_exist = chat_member_searcher(member_list, user_name)
 
-    user_info = chat_member_searcher(member_list, '회원님')
+    # user_info = chat_member_searcher(member_list, '회원님')
 
-    if not user_exist:
-        pass
-    else:
-        user_info.name = user_exist.name
-        user_info.invitedDate = user_exist.invitedDate
+    # if not user_exist:
+    #     pass
+    # else:
+    #     user_info.name = user_exist.name
+    #     user_info.invitedDate = user_exist.invitedDate
 
-        member_list.remove(user_exist)
+    #     member_list.remove(user_exist)

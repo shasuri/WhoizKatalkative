@@ -17,3 +17,4 @@ Py3ver/gui_ver/gui_test*
 *.xlsx
 Py3ver/gui_ver/sheet_test.py
 Py3ver/gui_ver/test_g.py
+input/*
